@@ -1,5 +1,6 @@
 from flask import Flask, redirect, request, render_template
 from pymongo import MongoClient
+from urllib2 import urlopen
 import random
 
 #constants
@@ -15,9 +16,12 @@ app = Flask(__name__)
 @app.route('/', methods=["POST", "GET"])
 def index():
 	if request.method == "POST":
-		long_url = request.form['long_url']
+		long_url = validate_url(request.form['long_url'])
 		short_url = request.form['short_url']
 		
+		if long_url is "":
+			return render_template("index.html", error="Invalid long url")
+
 		#random
 		if short_url is None or "":
 			rand_url = gen_random_string()
@@ -48,4 +52,15 @@ def gen_random_string(len=DEFAULT_LENGTH, allowed_chars=ALLOWED_CHARS):
 	while(coll.find_one({"short_url": rand}) is not None):
 		rand = ''.join(random.choice(allowed_chars) for i in range(len))
 	return rand
+
+def validate_url(long_url):
+	if not long_url.startswith("https://") and not long_url.startswith("http://"):
+		long_url = "http://" + long_url
+	try:
+		ret = urlopen(long_url)
+		if ret.code >= 400:
+			long_url = ""
+	except:
+		long_url = ""	
+	return long_url
 	
