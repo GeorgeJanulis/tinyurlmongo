@@ -1,6 +1,6 @@
 from flask import Flask, redirect, request, render_template
 from pymongo import MongoClient
-from urllib2 import urlopen
+from urllib.request import urlopen
 import random
 
 #constants
